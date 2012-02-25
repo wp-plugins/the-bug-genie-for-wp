@@ -1,5 +1,5 @@
 <?php
-/*  Copyright 2011 Raphael Reitzig (wordpress@verrech.net)
+/*  Copyright 2012 Raphael Reitzig (wordpress@verrech.net)
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License, version 2, as
@@ -19,11 +19,6 @@
 
 if ( !class_exists('LmazyPlugin') ) {
 
-  require_once(ABSPATH.'/wp-admin/includes/plugin.php');
-  require_once(ABSPATH.'/wp-admin/includes/template.php');
-  require_once(ABSPATH.'/wp-includes/functions.wp-scripts.php');
-  require_once(ABSPATH.'/wp-includes/functions.wp-styles.php');
-
 /**
  * Abstract implementation of a Wordpress plugin that factors some standard
  * tasks out. These are the things this class does:
@@ -38,7 +33,7 @@ if ( !class_exists('LmazyPlugin') ) {
  * to call its constructor and method implementations via parent::name(...).
  *
  * @author Raphael Reitzig
- * @version 1.0
+ * @version 1.1
  */
 abstract class LmazyPlugin {
   /**
@@ -93,18 +88,21 @@ abstract class LmazyPlugin {
     $this->hasOptions = $hasOptions;
 
     if ( $hasOptions ) {
-      register_setting($this->name, $this->name, array(&$this, 'options_validate'));
-
-      // Register Options Page
-      add_action('admin_menu', array(&$this, 'admin_menu_init'));
-      // Add link to options page to plugin list
-      add_filter('plugin_action_links', array(&$this, 'plugin_list_link'), 10, 2);
+      if ( is_admin() ) {
+        // Register Options Page
+        add_action('admin_menu', array(&$this, 'admin_menu_init'));
+        // Add link to options page to plugin list
+        add_filter('plugin_action_links', array(&$this, 'plugin_list_link'), 10, 2);
+        // Register settings
+        add_action('admin_init', array(&$this, 'setup_settings'));
+      }
 
       $this->options = get_option($this->name);
     }
 
     register_activation_hook($this->mainFile, array(&$this, 'activate'));
     register_deactivation_hook($this->mainFile, array(&$this, 'deactivate'));
+    // TODO implement upgrade for options --> version?
   }
 
   /**
@@ -112,7 +110,7 @@ abstract class LmazyPlugin {
    * the settings menu.
    */
   function admin_menu_init() {
-    add_options_page($this->prettyName.' -- Options', $this->prettyName, 'manage_options', basename($this->mainFile), array(&$this, 'options_page'));
+    add_options_page($this->prettyName.' -- Settings', $this->prettyName, 'manage_options', basename($this->mainFile), array(&$this, 'options_page'));
   }
 
   /**
@@ -135,7 +133,19 @@ abstract class LmazyPlugin {
    * @param input array of wannabe options (key/value pairs)
    * @return an array of key/value pairs containing the new options
    */
-  abstract function options_validate($input);
+  function options_validate($input) {
+    return shortcode_atts($this->options, $input);
+  }
+
+  /**
+   * Used to create the options page form by the default implementation
+   * of options_page. Should register settings via Settings API.
+   * Default registers a setting with plugin name and options_validate as
+   * validation function.
+   */
+  function setup_settings() {
+    register_setting($this->name, $this->name, array(&$this, 'options_validate'));
+  }
 
   /**
    * Prints this plugin's options page.
@@ -159,10 +169,10 @@ abstract class LmazyPlugin {
       <?php } ?>
 
       <form action="options.php" method="post">
-        <p><input name="Submit" type="submit" value="<?php esc_attr_e('Save Changes'); ?>" /></p>
+        <?php submit_button(); ?>
         <?php settings_fields($this->name); ?>
         <?php do_settings_sections($this->name); ?>
-        <p><input name="Submit" type="submit" value="<?php esc_attr_e('Save Changes'); ?>" /></p>
+        <?php submit_button(); ?>
       </form>
     </div> <?php
   }

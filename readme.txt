@@ -2,8 +2,8 @@
 Contributors: akerbos87
 Tags: bugs, development, bug tracker
 Requires at least: 3.2.0
-Tested up to: 3.2.1
-Stable tag: 1.0
+Tested up to: 3.3.1
+Stable tag: 1.0.1
 
 Present issues from The Bug Genie in your Wordpress blog.
 
@@ -68,5 +68,13 @@ You can
 
 == Changelog ==
 
+= 1.0.1 =
+Fixes a bug of settings page creation that causes incompatibility with another plugin by the same author.
+
 = 1.0 =
 Initial Release
+
+== Upgrade Notice ==
+
+= 1.0.1 =
+Fixes a compatibility bug.

@@ -3,14 +3,14 @@
 Plugin Name: The Bug Genie for WP
 Plugin URI: http://wordpress.org/extend/plugins/the-bug-genie-for-wp/
 Description: Access project and bug information from The Bug Genie.
-Version: 1.0
+Version: 1.0.1
 Author: Raphael Reitzig
 Author URI: http://lmazy.verrech.net/
 License: GPL2
 */
 ?>
 <?php
-/*  Copyright 2011 Raphael Reitzig (wordpress@verrech.net)
+/*  Copyright 2012 Raphael Reitzig (wordpress@verrech.net)
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License, version 2, as
@@ -34,7 +34,7 @@ require_once('LmazyPlugin.php');
  * Main class of plugin The Bug Genie for WP. See readme.txt for details.
  *
  * @author Raphael Reitzig
- * @version 1.0
+ * @version 1.0.1
  */
 class Tbg4Wp extends LmazyPlugin {
 
@@ -59,9 +59,6 @@ class Tbg4Wp extends LmazyPlugin {
     add_shortcode('issue', array(&$this, 'issue'));
     add_shortcode('issues', array(&$this, 'issues'));
     add_shortcode('reportbug', array(&$this, 'reportbug'));
-
-    // Register settings via Settings API
-    include('settings.inc.php');
   }
 
   /**
@@ -104,6 +101,15 @@ class Tbg4Wp extends LmazyPlugin {
     }
 
     return $options;
+  }
+
+  /**
+   * Used to create the options page form by the default implementation
+   * of options_page. Should register settings via Settings API.
+   */
+  function setup_settings() {
+    parent::setup_settings();
+    include('settings.inc.php');
   }
 
   /*******************************************
@@ -246,7 +252,6 @@ class Tbg4Wp extends LmazyPlugin {
    *                    Other parameters will be passed to TBG API directly.
    * @return string Shortcode replacement text
    */
-  // project key + key/value => issue list described by parameters, class: issues)
   function issues($args) {
     if ( empty($args['project']) ) {
       return '<div class="errorbox">Specify parameter \'project\'</div>';
